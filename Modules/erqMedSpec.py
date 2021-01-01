@@ -585,7 +585,7 @@ def opening_angle_finder(ERQ, Main_center,  enclosing_ratio, resolution):
         count = res.cumcount
         # return np.rad2deg(np.arccos(x[np.where(count==int(enclosing_ratio*len(ERQ_dir)))]))
         angle = x[np.where(count>=int(enclosing_ratio*len(ERQ_angles)))]
-        return angle[0] , wedge_direction
+        return np.rad2deg(angle[0]) , wedge_direction
 
 
 

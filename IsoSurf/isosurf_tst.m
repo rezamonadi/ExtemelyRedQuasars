@@ -39,7 +39,7 @@ sum(in_wedge)
 
 
 % % % % calculating the density on the grid
-ND=25;
+ND=50;
 x = linspace(min(iw3),max(iw3), ND);
 y = linspace(min(rew),max(rew), ND);
 z = linspace(min(kt80),max(kt80), ND);
@@ -49,18 +49,21 @@ D = mvksdensity(X_data, xi, 'Bandwidth',[0.6*std(iw3),0.6*std(rew),0.6*std(kt80)
 D_mesh = reshape(D,size(xx));
 
 % ploting the iso-surface on top of data points
-% figure
 MainCenter = median(X_data);
-coeef =[0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3]
+coeff =[0.85, 0.9,0.95, 1, 1.05, 1.1, 1.15];
 for  i=1:7
-    isovalue1 =1/3*max(D)*coeef(i);
-    isovalue2 =1/9*max(D)*coeef(i);
+    isovalue1 =1/3*max(D)*coeff(i);
+    isovalue2 =1/9*max(D)*coeff(i);
     surf1 = isosurface(xx,yy,zz, D_mesh, isovalue1);
     surf2 = isosurface(xx,yy,zz, D_mesh, isovalue2);
     surfe1=surf2;
     surfe2=surf2;
-    surfe1.vertices=(surfe1.vertices - MainCenter)*1.5+ MainCenter;
+    surfe3=surf2;
+    surfe4=surf2;
+    surfe1.vertices=(surfe2.vertices - MainCenter)*1.5+ MainCenter;
     surfe2.vertices=(surfe2.vertices - MainCenter)*2+ MainCenter;
+    surfe3.vertices=(surfe3.vertices - MainCenter)*2.5+ MainCenter;
+    surfe4.vertices=(surfe4.vertices - MainCenter)*3+ MainCenter;
 
     % initializing labels
     labels = zeros(1,nX);
@@ -68,39 +71,40 @@ for  i=1:7
     in_surf2 = inpolyhedron(surf2, X_data);
     in_surfe1 = inpolyhedron(surfe1, X_data);
     in_surfe2 = inpolyhedron(surfe2, X_data);
+    in_surfe3 = inpolyhedron(surfe3, X_data);
+    in_surfe4 = inpolyhedron(surfe4, X_data);
     labels((in_surf1==1))=1;
     labels((in_wedge==1) & (in_surf1==0) & (in_surf2==1))=2;
     labels((in_wedge==1) & (in_surf2==0) & (in_surfe1==1))=3;
     labels((in_wedge==1) & (in_surfe1==0) & (in_surfe2==1))=4;
-    labels((in_wedge==1) & (in_surfe2==0))=5;
-    fid =sprintf('labels-coeff%.1f-inv3-inv9-exp1-15-exp2-2-open-80.mat', coeef(i))
+    labels((in_wedge==1) & (in_surfe2==0) & (in_surfe3==1))=5;
+    labels((in_wedge==1) & (in_surfe3==0) & (in_surfe4==1))=6;
+    labels((in_wedge==1) & (in_surfe4==0))=7;
+    fid =sprintf('labels-coeff%.2f-inv3-inv9-exp1-15-exp2-2-open-80.mat', coeff(i))
     save(fid,'labels')
+    % color = ['b', 'c','y','c','m','b','r'];
+    % figure;
+    % for g=1:6
+    %     datax = X_data(labels==g,1);
+    %     datay = X_data(labels==g,2);
+    %     dataz = X_data(labels==g,3);
+    %     % datax = X_normal(labels==g,1);
+    %     % datay = X_normal(labels==g,2);
+    %     % dataz = X_normal(labels==g,3);
+    %     scatter3(datax, datay, dataz,  color(g+1), 'filled')
+    %     hold on
+    % end
+    % % p1 = patch(surf1);
+    % % hold on
+    % % p1 = patch(surf2);
+    % % hold on
+    % p1 = patch(surfe3);
+    % hold on
+    % p1 = patch(surfe3);
+    % hold on
+    % view(3); axis tight
+    % camlight; lighting gouraud
+    % alpha(0.3)
+    % tit= sprintf('coeff=%.2f', coeff(i));
+    % title(tit)
 end
-% color = ['c','y','c','m','b','r'];
-% for g=1:5
-%     datax = X_data(labels==g,1);
-%     datay = X_data(labels==g,2);
-%     dataz = X_data(labels==g,3);
-%     % datax = X_normal(labels==g,1);
-%     % datay = X_normal(labels==g,2);
-%     % dataz = X_normal(labels==g,3);
-%     scatter3(datax, datay, dataz,  color(g+1), 'filled')
-%     hold on
-% end
-% p1 = patch(surf1);
-% hold on
-% p1 = patch(surf2);
-% hold on
-% p1 = patch(surfe1);
-% hold on
-% p1 = patch(surfe2);
-% hold on
-% % % % % % p1 = patch(surfe2);
-% % % % % % hold on
-% % % % % % alpha(0.1)
-% % % scatter3(X_normal(:,1), X_normal(:,2),  X_normal(:,3), 5, 'Marker', '.')
-% % % scatter3(MainCenter(1), MainCenter(2), MainCenter(3), 1000, 'Marker', '.')
-% % % % daspect([1,1,1])
-% view(3); axis tight
-% camlight; lighting gouraud
-% alpha(0.3)

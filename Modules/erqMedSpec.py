@@ -349,7 +349,7 @@ def stacker(z_dr12, plate, mjd, fiberid):
         
         for i in tqdm(range(nqsos)):
         # Retrieve the spectra:
-                file = '../sdss/%d/spec-%d-%d-%04d.fits' % (plate[i], plate[i],mjd[i],fiberid[i])
+                file = '/media/reza/My Passport/erq/fred/sdss/%d/spec-%d-%d-%04d.fits' % (plate[i], plate[i],mjd[i],fiberid[i])
                 spec = readDR10spec(file)
                 wave = spec['wl']
                 wz = wave/(z_dr12[i]+1)
@@ -364,7 +364,7 @@ def stacker(z_dr12, plate, mjd, fiberid):
         med1 = np.nanmedian(sp,axis=0)
         return med1
 
-def KDE_Bin2D(sample, x_erq, y_erq,ngrid, bw,levels,A, B, \
+def KDE_Bin2D(sample, rangeData, minData, x_erq, y_erq,ngrid, bw,levels,A, B, \
  ERQ_color, ERQ_rew, expansion_handle, expansion, path, tip, x_label, y_label, tit):
         """
         This function gives the labels for each bin
@@ -393,6 +393,7 @@ def KDE_Bin2D(sample, x_erq, y_erq,ngrid, bw,levels,A, B, \
         MEDIUM_SIZE = 10
         BIGGER_SIZE = 12
         fig=plt.figure()
+        plt.cla()
         ax = fig.add_subplot(111)
         # plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
         # plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
@@ -505,6 +506,21 @@ def KDE_Bin2D(sample, x_erq, y_erq,ngrid, bw,levels,A, B, \
 
 
     
+        
+        # # # plb.axis('equal')
+        ticks_x = ticker.FuncFormatter(lambda x, 
+                                   pos: '{0:g}'.format(round(x*rangeData[0]+ minData[0], 2)))
+        ax.xaxis.set_major_formatter(ticks_x)
+
+        ticks_y = ticker.FuncFormatter(lambda x, 
+                                  pos: '{0:g}'.format(round(x*rangeData[1]+minData[1],2)))
+        ax.yaxis.set_major_formatter(ticks_y)
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        ax.set_title(tit)
+        # r = np.max(sample, axis=0) - np.min(sample, axis=0)
+        # plt.xlim(min(sample[:,0]) - 0.1*r[0], max(sample[:,0]) +0.1*r[0])
+        # plt.ylim(min(sample[:,1]) - 0.1*r[1], max(sample[:,1]) + 0.1*r[1])
         for j in tqdm(range(nBins)):  
                 if(j>0):
                         x=[]; y=[]
@@ -515,32 +531,18 @@ def KDE_Bin2D(sample, x_erq, y_erq,ngrid, bw,levels,A, B, \
 
                         bin_med_position0 = np.median(x)
                         bin_med_position1 = np.median(y)
-                        plt.text(bin_med_position0, bin_med_position1, str(j+1), fontsize=8, color='red')
+                        plt.text(bin_med_position0, bin_med_position1, str(j), fontsize=8, color='red')
 
-                        plt.text(7, 1-j*0.1, 'Bin'+ str(j+1)+ ' : #'+str(int(bin_pop[j])),fontsize=7, color='black' )
+                        ax.text(.77, 0.35-j*0.04, 'Bin-'+ str(j)+ ' : #'+str(int(bin_pop[j])),fontsize=7, color='black' )
                 else:
-                        plt.text(7, 1, 'Bin1' + ' : #'+str(tip_pop),fontsize=7, color='black' )
-                        plt.text(np.median(sample[:,0]), np.median(sample[:,1]), '1', fontsize=8, color='red')
+                        ax.text(.77, .35, 'Bin-C' + ' : #'+str(tip_pop),fontsize=7, color='black' )
+                        ax.text(np.median(sample[:,0]), np.median(sample[:,1]), 'C', fontsize=8, color='red')
         # if(expansion_handle==True): plt.title(str(round(expansion[0],1))+', '+ str(round(expansion[1],1))+ ', ' + str(round(expansion[2],1)))
         # plt.axis('equal')
         
-        # # # plb.axis('equal')
-        #ticks_x = ticker.FuncFormatter(lambda x, 
-       #                             pos: '{0:g}'.format(round(x*rangeData[0]+ minData[0], 2)))
-        #ax.xaxis.set_major_formatter(ticks_x)
-
-        #ticks_y = ticker.FuncFormatter(lambda x, 
-        #                           pos: '{0:g}'.format(round(x*rangeData[1]+minData[1],2)))
-        #ax.yaxis.set_major_formatter(ticks_y)
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
-        plt.title(tit)
-        r = np.max(sample, axis=0) - np.min(sample, axis=0)
-        plt.xlim(min(sample[:,0]) - 0.1*r[0], max(sample[:,0]) +0.1*r[0])
-        plt.ylim(min(sample[:,1]) - 0.1*r[1], max(sample[:,1]) + 0.1*r[1])
-        plt.savefig(path, bbox_inches='tight', format='png', dpi=800)
-        plt.show()
-        #plt.close()
+        plt.savefig(path, bbox_inches='tight', format='png', dpi=200)
+        # plt.show()
+        plt.close()
 
         print('tip_pop', tip_pop )
         if(tip==True):
@@ -585,7 +587,7 @@ def opening_angle_finder(ERQ, Main_center,  enclosing_ratio, resolution):
         count = res.cumcount
         # return np.rad2deg(np.arccos(x[np.where(count==int(enclosing_ratio*len(ERQ_dir)))]))
         angle = x[np.where(count>=int(enclosing_ratio*len(ERQ_angles)))]
-        return np.rad2deg(angle[0]) , wedge_direction
+        return angle[0] , wedge_direction
 
 
 

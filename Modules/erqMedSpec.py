@@ -365,7 +365,7 @@ def stacker(z_dr12, plate, mjd, fiberid):
         return med1
 
 def KDE_Bin2D(sample, rangeData, minData, x_erq, y_erq,ngrid, bw,levels,A, B, \
- ERQ_color, ERQ_rew, expansion_handle, expansion, path, tip, x_label, y_label, tit):
+              expansion_handle, expansion, path, tip, x_label, y_label, tit):
         """
         This function gives the labels for each bin
         given the opening angle and direction of the wedge centeral vector"""
@@ -508,19 +508,19 @@ def KDE_Bin2D(sample, rangeData, minData, x_erq, y_erq,ngrid, bw,levels,A, B, \
     
         
         # # # plb.axis('equal')
-        ticks_x = ticker.FuncFormatter(lambda x, 
-                                   pos: '{0:g}'.format(round(x*rangeData[0]+ minData[0], 2)))
-        ax.xaxis.set_major_formatter(ticks_x)
+        # ticks_x = ticker.FuncFormatter(lambda x, 
+        #                            pos: '{0:g}'.format(round(x*rangeData[0]+ minData[0], 2)))
+        # ax.xaxis.set_major_formatter(ticks_x)
 
-        ticks_y = ticker.FuncFormatter(lambda x, 
-                                  pos: '{0:g}'.format(round(x*rangeData[1]+minData[1],2)))
-        ax.yaxis.set_major_formatter(ticks_y)
+        # ticks_y = ticker.FuncFormatter(lambda x, 
+        #                           pos: '{0:g}'.format(round(x*rangeData[1]+minData[1],2)))
+        # ax.yaxis.set_major_formatter(ticks_y)
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)
         ax.set_title(tit)
         # r = np.max(sample, axis=0) - np.min(sample, axis=0)
-        # plt.xlim(min(sample[:,0]) - 0.1*r[0], max(sample[:,0]) +0.1*r[0])
-        # plt.ylim(min(sample[:,1]) - 0.1*r[1], max(sample[:,1]) + 0.1*r[1])
+        plt.xlim(0,1)
+        plt.ylim(0,1)
         for j in tqdm(range(nBins)):  
                 if(j>0):
                         x=[]; y=[]

@@ -1,13 +1,14 @@
 
 clc
-% clear
+clear
 %  loading 
-X = load('../MedSpec/data.dat');
+X = load('data3d.dat');
 iw3 = X(:,1);
 rew = X(:,2);
 kt80 = X(:,3);
 X_data = X(:,1:3);
 X_normal = normalize(X_data, 'range');
+size(X_data)
 % X_data= X_data;
 % %  centering 
 MainCenter = median(X_normal);
@@ -18,7 +19,7 @@ ERQVector = ERQCenter - MainCenter;
 [nERQ, c] =size(ERQ);
 [nX,c] = size(X);
 % % building erq vectors and nrmalizing 
-
+r=.99
 for i=1:nERQ
      ERQNorm = norm(ERQ(i,:));
      ERQDirections(i) = acos(dot(ERQVector, ERQ(i,:))/norm(ERQVector)/ERQNorm);
@@ -30,7 +31,7 @@ end
 
 [counts, bins] = histcounts(ERQDirections, 1000);
 cdf = cumsum(counts);
-ind = find(cdf>int32(.80*nERQ));
+ind = find(cdf>int32(r*nERQ));
 opening_angle = (bins(ind(1)));
 rad2deg((opening_angle))
 in_wedge = ((AllDirections) <= opening_angle);
@@ -40,7 +41,7 @@ in_wedge=in_wedge';
 
 
 % % % % % % calculating the density on the grid
-ND=500;
+ND=100;
 x = linspace(min(X_normal(:,1)),max(X_normal(:,1)), ND);
 y = linspace(min(X_normal(:,2)),max(X_normal(:,2)), ND);
 z = linspace(min(X_normal(:,3)),max(X_normal(:,3)), ND);
@@ -48,9 +49,9 @@ z = linspace(min(X_normal(:,3)),max(X_normal(:,3)), ND);
 xi = [xx(:) yy(:) zz(:)];
 Silver = (4/5/nX)^(1/7);
 % D = mvksdensity(X_normal, xi, 'Bandwidth', Silver*std(X_normal));
-% save('D_mesh250_Silver_10.mat', 'D_mesh')
-load('D_mesh500_Silver_10.mat');
+load('D_mesh100_Silver_10.mat');
 % D_mesh = reshape(D, size(xx));
+% save('D_mesh100_Silver_10.mat', 'D_mesh')
 
 % ploting the iso-surface on top of data points
 for coeff=0.65:0.65
@@ -67,9 +68,10 @@ for coeff=0.65:0.65
     surfe2=surf3;
     surfe3=surf3;
     surfe4=surf3;
-    surfe1.vertices=(surf3.vertices - MainCenter)*1.4+ MainCenter;
-    surfe2.vertices=(surf3.vertices - MainCenter)*2.1+ MainCenter;
-    surfe3.vertices=(surf3.vertices - MainCenter)*2.5+ MainCenter;
+    surfe1.vertices=(surf3.vertices - MainCenter)*1.3+ MainCenter;
+    surfe2.vertices=(surf3.vertices - MainCenter)*1.5+ MainCenter;
+    surfe3.vertices=(surf3.vertices - MainCenter)*2.1+ MainCenter;
+    surfe4.vertices=(surf3.vertices - MainCenter)*2.5+ MainCenter;
     % surfe4.vertices=(surf3.vertices - MainCenter)*3+ MainCenter;
 
     % initializing labels
@@ -80,7 +82,7 @@ for coeff=0.65:0.65
     in_surfe1 = inpolyhedron(surfe1, X_normal);
     in_surfe2 = inpolyhedron(surfe2, X_normal);
     in_surfe3 = inpolyhedron(surfe3, X_normal);
-    % in_surfe4 = inpolyhedron(surfe4, X_normal);
+    in_surfe4 = inpolyhedron(surfe4, X_normal);
 
     labels((in_surf1==1))=1;
     labels((in_wedge==1) & (in_surf1==0) & (in_surf2==1))=2;
@@ -88,13 +90,14 @@ for coeff=0.65:0.65
     labels((in_wedge==1) & (in_surf3==0) & (in_surfe1==1))=4;
     labels((in_wedge==1) & (in_surfe1==0) & (in_surfe2==1))=5;
     labels((in_wedge==1) & (in_surfe2==0) & (in_surfe3==1))=6;
-    labels((in_wedge==1) & (in_surfe3==0))=7;
-    % labels((in_wedge==1) & (in_surfe4==0))=8;
-    fid =sprintf('labels-coeff-%.2f.mat', coeff);
+    labels((in_wedge==1) & (in_surfe3==0) & (in_surfe4==1))=7;
+    labels((in_wedge==1) & (in_surfe4==0))=8;
+    % labels((in_wedge==1) & (in_surfe3==0))=7;
+    fid =sprintf('labels-coeff-%.2f-r-%.2f.mat', coeff, r);
     save(fid,'labels');
 end
-
-c=turbo(8);
+nBin=8;
+c=turbo(nBin);
 figure;
 view(3);
 % alpha(0.3)
@@ -108,7 +111,7 @@ p =plot3([MainCenter(1), ERQCenter(1)],[MainCenter(2), ERQCenter(2)],...
 [MainCenter(3), ERQCenter(3)] );
 p.LineWidth=3;
 hold on
-for b=0:8
+for b=0:nBin
     mask = (labels==b);
     if (b==0)
         scatter3(X_normal(mask,1), X_normal(mask,2), X_normal(mask,3), 0.5, 'k', 'Marker', '.' )

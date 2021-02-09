@@ -364,7 +364,7 @@ def stacker(z_dr12, plate, mjd, fiberid):
         med1 = np.nanmedian(sp,axis=0)
         return med1
 
-def KDE_Bin2D(sample, rangeData, minData, x_erq, y_erq,ngrid, bw,levels,A, B, \
+def KDE_Bin2D(sample, rangeData, minData, box, x_erq, y_erq, ngrid, bw,levels,A, B, \
               expansion_handle, expansion, path, tip, x_label, y_label, tit):
         """
         This function gives the labels for each bin
@@ -471,7 +471,7 @@ def KDE_Bin2D(sample, rangeData, minData, x_erq, y_erq,ngrid, bw,levels,A, B, \
 
                                 if(0<j<nBins-1): # intermediate contours
 
-                                        if( (cn_PnPoly(lines[Contour_ind], sample[i,:]) ==  1) and (cn_PnPoly(lines[Contour_ind+1], sample[i,:])==0) ):
+                                        if((cn_PnPoly(lines[Contour_ind], sample[i,:]) ==  1) and (cn_PnPoly(lines[Contour_ind+1], sample[i,:])==0)):
                                                 bin_label[i]=j+1
                                                 bin_pop[j] +=1
 
@@ -491,8 +491,11 @@ def KDE_Bin2D(sample, rangeData, minData, x_erq, y_erq,ngrid, bw,levels,A, B, \
         plt.plot([center[0], B[0]  ], [center[1], B[1]], ls='-', c='r', alpha=0.5, lw=1)
         #plt.plot([A[0], B[0] ], [A[1], B[1]], c='r', alpha=0.5)
         # plt.plot([center[0], (A[0]+B[0]-2*center[0])*0.4], [center[1], (A[1]+B[1]-2*center[1])*0.4], lw=2)
-        plt.plot([x_erq,max(sample[:,0])], [y_erq,y_erq], ls='--', c='black', lw=1)
-        plt.plot([x_erq,x_erq], [y_erq, max(sample[:,1])], ls='--', c='black', lw=1)
+        if (box==True):
+                x_erq_p=(x_erq -minData[0])/rangeData[0] 
+                y_erq_p=(y_erq -minData[1])/rangeData[1] 
+                plt.plot([x_erq_p,max(sample[:,0])], [y_erq_p,y_erq_p], ls='--', c='black', lw=1)
+                plt.plot([x_erq_p,x_erq_p], [y_erq_p, max(sample[:,1])], ls='--', c='black', lw=1)
         plt.scatter(sample[:,0], sample[:,1], s=0.1)
         # plt.xlim(-0.1, 1.1)
         # plt.ylim(-0.1, 1.1)
@@ -515,12 +518,11 @@ def KDE_Bin2D(sample, rangeData, minData, x_erq, y_erq,ngrid, bw,levels,A, B, \
         # ticks_y = ticker.FuncFormatter(lambda x, 
         #                           pos: '{0:g}'.format(round(x*rangeData[1]+minData[1],2)))
         # ax.yaxis.set_major_formatter(ticks_y)
-        ax.set_xlabel(x_label)
-        ax.set_ylabel(y_label)
-        ax.set_title(tit)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
         # r = np.max(sample, axis=0) - np.min(sample, axis=0)
-        plt.xlim(0,1)
-        plt.ylim(0,1)
+        # plt.xlim(0,1)
+        # plt.ylim(0,1)
         for j in tqdm(range(nBins)):  
                 if(j>0):
                         x=[]; y=[]
@@ -533,13 +535,13 @@ def KDE_Bin2D(sample, rangeData, minData, x_erq, y_erq,ngrid, bw,levels,A, B, \
                         bin_med_position1 = np.median(y)
                         plt.text(bin_med_position0, bin_med_position1, str(j), fontsize=8, color='red')
 
-                        ax.text(.77, 0.35-j*0.04, 'Bin-'+ str(j)+ ' : #'+str(int(bin_pop[j])),fontsize=7, color='black' )
+                        plt.text(.77, 0.35-j*0.04, 'Bin-'+ str(j)+ ' : #'+str(int(bin_pop[j])),fontsize=7, color='black' )
                 else:
-                        ax.text(.77, .35, 'Bin-C' + ' : #'+str(tip_pop),fontsize=7, color='black' )
-                        ax.text(np.median(sample[:,0]), np.median(sample[:,1]), 'C', fontsize=8, color='red')
+                        plt.text(.77, .35, 'Bin-C' + ' : #'+str(tip_pop),fontsize=7, color='black' )
+                        plt.text(np.median(sample[:,0]), np.median(sample[:,1]), 'C', fontsize=8, color='red')
         # if(expansion_handle==True): plt.title(str(round(expansion[0],1))+', '+ str(round(expansion[1],1))+ ', ' + str(round(expansion[2],1)))
         # plt.axis('equal')
-        
+        plt.title(tit)
         plt.savefig(path, bbox_inches='tight', format='png', dpi=200)
         # plt.show()
         plt.close()

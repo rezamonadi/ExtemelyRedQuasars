@@ -19,7 +19,7 @@ ERQVector = ERQCenter - MainCenter;
 [nERQ, c] =size(ERQ);
 [nX,c] = size(X);
 % % building erq vectors and nrmalizing 
-r=.99
+r=.99;
 for i=1:nERQ
      ERQNorm = norm(ERQ(i,:));
      ERQDirections(i) = acos(dot(ERQVector, ERQ(i,:))/norm(ERQVector)/ERQNorm);
@@ -40,18 +40,20 @@ in_wedge=in_wedge';
 
 
 
-% % % % % % calculating the density on the grid
-ND=100;
-x = linspace(min(X_normal(:,1)),max(X_normal(:,1)), ND);
-y = linspace(min(X_normal(:,2)),max(X_normal(:,2)), ND);
-z = linspace(min(X_normal(:,3)),max(X_normal(:,3)), ND);
-[xx,yy,zz] = ndgrid(x,y,z);
-xi = [xx(:) yy(:) zz(:)];
-Silver = (4/5/nX)^(1/7);
-% D = mvksdensity(X_normal, xi, 'Bandwidth', Silver*std(X_normal));
+% % % % % % % calculating the density on the grid
+% ND=100;
+% x = linspace(min(X_normal(:,1)),max(X_normal(:,1)), ND);
+% y = linspace(min(X_normal(:,2)),max(X_normal(:,2)), ND);
+% z = linspace(min(X_normal(:,3)),max(X_normal(:,3)), ND);
+% [xx,yy,zz] = ndgrid(x,y,z);
+% xi = [xx(:) yy(:) zz(:)];
+Silver = (4/5/nX)^(1/7)
+std(X_normal)
+Silver*std(X_normal)
+% % D = mvksdensity(X_normal, xi, 'Bandwidth', Silver*std(X_normal));
 load('D_mesh100_Silver_10.mat');
-% D_mesh = reshape(D, size(xx));
-% save('D_mesh100_Silver_10.mat', 'D_mesh')
+% % D_mesh = reshape(D, size(xx));
+% % save('D_mesh100_Silver_10.mat', 'D_mesh')
 
 % ploting the iso-surface on top of data points
 for coeff=0.65:0.65

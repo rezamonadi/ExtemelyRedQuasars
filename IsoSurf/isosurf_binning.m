@@ -41,12 +41,12 @@ in_wedge=in_wedge';
 
 
 % % % % % % % calculating the density on the grid
-% ND=100;
-% x = linspace(min(X_normal(:,1)),max(X_normal(:,1)), ND);
-% y = linspace(min(X_normal(:,2)),max(X_normal(:,2)), ND);
-% z = linspace(min(X_normal(:,3)),max(X_normal(:,3)), ND);
-% [xx,yy,zz] = ndgrid(x,y,z);
-% xi = [xx(:) yy(:) zz(:)];
+ND=100;
+x = linspace(min(X_normal(:,1)),max(X_normal(:,1)), ND);
+y = linspace(min(X_normal(:,2)),max(X_normal(:,2)), ND);
+z = linspace(min(X_normal(:,3)),max(X_normal(:,3)), ND);
+[xx,yy,zz] = ndgrid(x,y,z);
+xi = [xx(:) yy(:) zz(:)];
 Silver = (4/5/nX)^(1/7)
 std(X_normal)
 Silver*std(X_normal)
@@ -56,11 +56,12 @@ load('D_mesh100_Silver_10.mat');
 % % save('D_mesh100_Silver_10.mat', 'D_mesh')
 
 % ploting the iso-surface on top of data points
-for coeff=0.65:0.65
-    isovalue1 =0.5*max(max(max(D_mesh)))*coeff;
+coeff=0.65;
+    isovalue1 =0.3*max(max(max(D_mesh)))*coeff;
     isovalue2 =0.1*max(max(max(D_mesh)))*coeff;
     isovalue3 =0.025*max(max(max(D_mesh)))*coeff;
-
+    
+    
 
 
     surf1 = isosurface(xx,yy,zz, D_mesh, isovalue1);
@@ -70,10 +71,10 @@ for coeff=0.65:0.65
     surfe2=surf3;
     surfe3=surf3;
     surfe4=surf3;
-    surfe1.vertices=(surf3.vertices - MainCenter)*1.3+ MainCenter;
-    surfe2.vertices=(surf3.vertices - MainCenter)*1.5+ MainCenter;
-    surfe3.vertices=(surf3.vertices - MainCenter)*2.1+ MainCenter;
-    surfe4.vertices=(surf3.vertices - MainCenter)*2.5+ MainCenter;
+    surfe1.vertices=(surf3.vertices - MainCenter)*1.5+ MainCenter;
+    surfe2.vertices=(surf3.vertices - MainCenter)*1.8+ MainCenter;
+    surfe3.vertices=(surf3.vertices - MainCenter)*2+ MainCenter;
+    surfe4.vertices=(surf3.vertices - MainCenter)*2.6+ MainCenter;
     % surfe4.vertices=(surf3.vertices - MainCenter)*3+ MainCenter;
 
     % initializing labels
@@ -94,12 +95,10 @@ for coeff=0.65:0.65
     labels((in_wedge==1) & (in_surfe2==0) & (in_surfe3==1))=6;
     labels((in_wedge==1) & (in_surfe3==0) & (in_surfe4==1))=7;
     labels((in_wedge==1) & (in_surfe4==0))=8;
-    % labels((in_wedge==1) & (in_surfe3==0))=7;
-    fid =sprintf('labels-coeff-%.2f-r-%.2f.mat', coeff, r);
-    save(fid,'labels');
-end
+    save('labels.mat','labels');
+
 nBin=8;
-c=turbo(nBin);
+c=jet(7);
 figure;
 view(3);
 % alpha(0.3)
@@ -119,8 +118,13 @@ for b=0:nBin
         scatter3(X_normal(mask,1), X_normal(mask,2), X_normal(mask,3), 0.5, 'k', 'Marker', '.' )
         hold on
     else
-        scatter3(X_normal(mask,1), X_normal(mask,2), X_normal(mask,3), 20, c(b,:), 'Marker', 'o')
-        hold on
+        if(b==1)
+            scatter3(X_normal(mask,1), X_normal(mask,2), X_normal(mask,3), 20, [0.7, 0.7, 0.7], 'Marker', 'o')
+            hold on
+        else
+            scatter3(X_normal(mask,1), X_normal(mask,2), X_normal(mask,3), 20, c(b-1,:), 'Marker', 'o')
+            hold on
+        end
     end
         
 end

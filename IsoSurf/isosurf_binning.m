@@ -56,10 +56,10 @@ load('D_mesh100_Silver_10.mat');
 % % save('D_mesh100_Silver_10.mat', 'D_mesh')
 
 % ploting the iso-surface on top of data points
-coeff=0.65;
-    isovalue1 =0.3*max(max(max(D_mesh)))*coeff;
-    isovalue2 =0.1*max(max(max(D_mesh)))*coeff;
-    isovalue3 =0.025*max(max(max(D_mesh)))*coeff;
+
+    isovalue1 =0.5*max(max(max(D_mesh)));
+    isovalue2 =0.05*max(max(max(D_mesh)));
+    isovalue3 =0.025*0.65*max(max(max(D_mesh)));
     
     
 
@@ -71,10 +71,10 @@ coeff=0.65;
     surfe2=surf3;
     surfe3=surf3;
     surfe4=surf3;
-    surfe1.vertices=(surf3.vertices - MainCenter)*1.5+ MainCenter;
-    surfe2.vertices=(surf3.vertices - MainCenter)*1.8+ MainCenter;
-    surfe3.vertices=(surf3.vertices - MainCenter)*2+ MainCenter;
-    surfe4.vertices=(surf3.vertices - MainCenter)*2.6+ MainCenter;
+    surfe1.vertices=(surf3.vertices - MainCenter)*1.3+ MainCenter;
+    surfe2.vertices=(surf3.vertices - MainCenter)*1.5+ MainCenter;
+    surfe3.vertices=(surf3.vertices - MainCenter)*2.1+ MainCenter;
+    surfe4.vertices=(surf3.vertices - MainCenter)*2.5+ MainCenter;
     % surfe4.vertices=(surf3.vertices - MainCenter)*3+ MainCenter;
 
     % initializing labels
@@ -138,6 +138,7 @@ set(get(gca, 'YLabel'), 'String', ly);
 set(get(gca, 'ZLabel'), 'String', lz);
 pp = patch(([4.6, 4.6, 4.6, 4.6]-min(iw3))/(max(iw3)-min(iw3)), [0,0,1,1], [0,1,1,0], [0,0,0,0]);
 pp.FaceAlpha=0.1;
+pp.FaceColor=[.3,0.1,0.1];
 grid on
 % % % xlim([0,1])
 % % % ylim([0,1])

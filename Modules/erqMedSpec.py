@@ -364,8 +364,37 @@ def stacker(z_dr12, plate, mjd, fiberid):
         med1 = np.nanmedian(sp,axis=0)
         return med1
 
+def check_in(lines, points):
+    """
+    check if  `points` are inside the
+    path which `lines` make or not
+    """
+
+    from  matplotlib import path
+    
+    p = path.Path(lines)
+    flag = p.contains_points(points)
+    return flag
+
+
+def intersection_finder(L1, L2):
+        """ Finding intersection of two 
+        curves L1 and L2
+        It just work if there is only one intersection
+        """
+
+        minD=1e10
+        for i in range(len(L1)):
+                for j in range(len(L2)):
+                        D2 =(L2[j,0]-L1[i,0])**2 +(L2[j,1]-L1[i,1])**2
+                        if(D2<minD):
+                                minD = D2
+                                P_intersect =L2[j,:]
+        return P_intersect 
+
+
 def KDE_Bin2D(sample, rangeData, minData, box, x_erq, y_erq, ngrid, bw,levels,A, B, \
-              expansion_handle, expansion, path, tip, x_label, y_label, tit):
+              expansion_handle, expansion, path, tip, x_label, y_label, tit, plotting, verbose):
         """
         This function gives the labels for each bin
         given the opening angle and direction of the wedge centeral vector"""
@@ -377,36 +406,23 @@ def KDE_Bin2D(sample, rangeData, minData, box, x_erq, y_erq, ngrid, bw,levels,A,
         import matplotlib.pyplot as plt
         from  sklearn.neighbors import KernelDensity
         import matplotlib.ticker as ticker
-        print('KDE density estimation in 2D...')
+        if (verbose==True): print('KDE...')
         data =sample
         x, y = data.T
         # xi, yi, zi =kde2D(x,y, bw)
         k = kde.gaussian_kde(data.T)
         k.set_bandwidth(bw_method=k.factor*bw)
-        print('Contour plot...')
         xi, yi = np.mgrid[x.min():x.max():ngrid*1j, y.min():y.max():ngrid*1j]
         zi = k(np.vstack([xi.flatten(), yi.flatten()]))
         zi /=max(zi)
         density = np.array(k(sample.T))
         density/=max(density)
-        SMALL_SIZE = 8
-        MEDIUM_SIZE = 10
-        BIGGER_SIZE = 12
-        fig=plt.figure()
-        plt.cla()
-        ax = fig.add_subplot(111)
-        # plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-        # plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
-        # plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
-        # plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-        # plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-        # plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
-        # plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
-        # fg, axes = plt.subplots()
-        c = ax.contour(xi, yi, zi.reshape(xi.shape), levels=levels, alpha=0.6, c='black')
-        ax.clabel(c, fontsize=5)
+        
+        c = plt.contour(xi, yi, zi.reshape(xi.shape), levels=levels, alpha=0.6)
+        plt.clabel(c, fontsize=5)
         segments = c.allsegs
-
+        plt.cla()
+        plt.close()
         # finding the contours
         lines = []
         nContours = len(levels)
@@ -431,126 +447,131 @@ def KDE_Bin2D(sample, rangeData, minData, box, x_erq, y_erq, ngrid, bw,levels,A,
         center[0] = np.median(sample[:,0])
         center[1] = np.median(sample[:,1])
 
-        bin_label=np.zeros([len(sample)])
+        bin_label=np.zeros([len(sample)]) 
         nBins = nContours +1
-        bin_pop=np.zeros([nBins])
+        bin_pop = np.zeros(nBins)
+       
         bin_med_position=np.zeros([nBins,2])
-        tip_label=np.zeros([len(sample)])
-        tip_pop=0
+        
 
 
 
         #A, B = edger(sample, center, wedge_direction, opening_angle)
         color=['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8']
-        print('hull...')
         sample0=sample-center
         r_max_plotting=-100
         ind_in_triangle=[]
-        for i in tqdm(range(len(sample))):
+        if(verbose==True):  print('binning...')
+        # for i in (range(len(sample))):
 
-                if(tip==True):
-                        # if(in_hull(lines[-1], sample[i,:])==True):
-                        if(cn_PnPoly(lines[nContours-1], sample[i,:])==1):
-                                tip_pop+=1
-                                tip_label[i]=1
+        #         if(tip==True):
+        #                 # if(in_hull(lines[-1], sample[i,:])==True):
+        #                 if(cn_PnPoly(lines[nContours-1], sample[i,:])==1):
+        #                         tip_pop+=1
+        #                         tip_label[i]=1
 
-                if (in_triangle(A,B, center, sample[i,:], 1e-8)==True):
-                        ind_in_triangle.append(i)
-                        # r=np.sqrt(sample0[i,0]**2+sample0[i,1]**2)
-                        # if(r>r_max_plotting): r_max_plotting=r
-                        for j in range(0, nBins):
-                                Contour_ind = (nContours-1) -j
-
-
-                                if(j==0): # the inner most bin
-
-                                        if(cn_PnPoly(lines[Contour_ind], sample[i,:])==1):
-                                                bin_label[i]=j+1
-                                                bin_pop[j] +=1
+        #         if (in_triangle(A,B, center, sample[i,:], 1e-8)==True):
+        #                 ind_in_triangle.append(i)
+        #                 # r=np.sqrt(sample0[i,0]**2+sample0[i,1]**2)
+        #                 # if(r>r_max_plotting): r_max_plotting=r
+        #                 for j in range(0, nBins):
+        #                         Contour_ind = (nContours-1) -j
 
 
-                                if(0<j<nBins-1): # intermediate contours
+        #                         if(j==0): # the inner most bin
 
-                                        if((cn_PnPoly(lines[Contour_ind], sample[i,:]) ==  1) and (cn_PnPoly(lines[Contour_ind+1], sample[i,:])==0)):
-                                                bin_label[i]=j+1
-                                                bin_pop[j] +=1
-
-                                if(j==nBins-1): # the bin out of expanded contour
-                                        if(cn_PnPoly(lines[0],sample[i,:])==0):
-                                                bin_label[i]=j+1
-                                                bin_pop[j] +=1
-        print('plotting')
-        # plt.clf()
-        # for i in tqdm(range(len(sample))):
-        #         for j in range(0,nBins):
-        #                 plt.scatter(sample[i,0], sample[i,1], c=color[j])
+        #                                 if(cn_PnPoly(lines[Contour_ind], sample[i,:])==1):
+        #                                         bin_label[i]=j+1
+        #                                         bin_pop[j] +=1
 
 
-        sample_in_traingle = sample[ind_in_triangle]
-        plt.plot([center[0], A[0] ], [center[1], A[1]], ls='-', c='r', alpha=0.5, lw=1)
-        plt.plot([center[0], B[0]  ], [center[1], B[1]], ls='-', c='r', alpha=0.5, lw=1)
-        #plt.plot([A[0], B[0] ], [A[1], B[1]], c='r', alpha=0.5)
-        # plt.plot([center[0], (A[0]+B[0]-2*center[0])*0.4], [center[1], (A[1]+B[1]-2*center[1])*0.4], lw=2)
-        if (box==True):
-                x_erq_p=(x_erq -minData[0])/rangeData[0] 
-                y_erq_p=(y_erq -minData[1])/rangeData[1] 
-                plt.plot([x_erq_p,max(sample[:,0])], [y_erq_p,y_erq_p], ls='--', c='black', lw=1)
-                plt.plot([x_erq_p,x_erq_p], [y_erq_p, max(sample[:,1])], ls='--', c='black', lw=1)
-        plt.scatter(sample[:,0], sample[:,1], s=0.1)
-        # plt.xlim(-0.1, 1.1)
-        # plt.ylim(-0.1, 1.1)
-        for i in range(0, nContours):
-                l = lines[i]
+        #                         if(0<j<nBins-1): # intermediate contours
 
-                if (i<len(expansion)):
-                        plt.plot(l[:,0], l[:,1], c = 'black', ls='--', alpha=0.5, lw=1)
-                # else:
-                        # plt.plot(l[:,0], l[:,1], c = 'black', ls='-', alpha=0.5, lw=1)
+        #                                 if((cn_PnPoly(lines[Contour_ind], sample[i,:]) ==  1) and (cn_PnPoly(lines[Contour_ind+1], sample[i,:])==0)):
+        #                                         bin_label[i]=j+1
+        #                                         bin_pop[j] +=1
+
+        #                         if(j==nBins-1): # the bin out of expanded contour
+        #                                 if(cn_PnPoly(lines[0],sample[i,:])==0):
+        #                                         bin_label[i]=j+1
+        #                                         bin_pop[j] +=1
+        for b in range(nBins):
+                if(b==0):
+                        mask = check_in(lines[nContours-1], sample)
+                        bin_label[mask]=b+1
+                if (0<b<nBins-1):
+                        mask_outer = check_in(lines[nContours-1-b], sample)
+                        mask_inner = check_in(lines[nContours-b], sample)
+                        mask_tri= check_in(list([A,B,list(center)]), sample)
+                        bin_label[~mask_inner & mask_outer & mask_tri]=b+1
+                if (b==nBins-1):
+                        mask_outer = check_in(lines[nContours-b], sample)
+                        mask_tri= check_in(list([A,B,list(center)]), sample)
+                        bin_label[~mask_outer & mask_tri]=b+1
+
+                bin_pop[b] = np.int32(np.sum(bin_label==b+1))
+        if (plotting==True):                                                
+                print('plotting')
+                # plt.clf()
+                # for i in tqdm(range(len(sample))):
+                #         for j in range(0,nBins):
+                #                 plt.scatter(sample[i,0], sample[i,1], c=color[j])
 
 
-    
+                sample_in_traingle = sample[ind_in_triangle]
+                plt.plot([center[0], A[0] ], [center[1], A[1]], ls='-', c='r', alpha=0.5, lw=1)
+                plt.plot([center[0], B[0]  ], [center[1], B[1]], ls='-', c='r', alpha=0.5, lw=1)
         
-        # # # plb.axis('equal')
-        # ticks_x = ticker.FuncFormatter(lambda x, 
-        #                            pos: '{0:g}'.format(round(x*rangeData[0]+ minData[0], 2)))
-        # ax.xaxis.set_major_formatter(ticks_x)
+                # plt.plot([center[0], (A[0]+B[0]-2*center[0])*0.4], [center[1], (A[1]+B[1]-2*center[1])*0.4], lw=2)
+                if (box==True):
+                        x_erq_p=(x_erq -minData[0])/rangeData[0] 
+                        y_erq_p=(y_erq -minData[1])/rangeData[1] 
+                        plt.plot([x_erq_p,max(sample[:,0])], [y_erq_p,y_erq_p], ls='--', c='black', lw=1)
+                        plt.plot([x_erq_p,x_erq_p], [y_erq_p, max(sample[:,1])], ls='--', c='black', lw=1)
+                plt.scatter(sample[:,0], sample[:,1], s=0.1)
+                # plt.xlim(-0.1, 1.1)
+                # plt.ylim(-0.1, 1.1)
+                for i in range(0, nContours):
+                        l = lines[i]
 
-        # ticks_y = ticker.FuncFormatter(lambda x, 
-        #                           pos: '{0:g}'.format(round(x*rangeData[1]+minData[1],2)))
-        # ax.yaxis.set_major_formatter(ticks_y)
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
-        # r = np.max(sample, axis=0) - np.min(sample, axis=0)
-        # plt.xlim(0,1)
-        # plt.ylim(0,1)
-        for j in tqdm(range(nBins)):  
-                if(j>0):
-                        x=[]; y=[]
-                        for i in range(len(sample)):
-                                if (bin_label[i]==j+1):
-                                        x.append(sample[i,0])
-                                        y.append(sample[i,1])
+                        if (i<len(expansion)):
+                                plt.plot(l[:,0], l[:,1], c = 'black', ls='--', alpha=0.5, lw=1)
+                        else:
+                                plt.plot(l[:,0], l[:,1], c = 'black', ls='-', alpha=0.5, lw=1)
 
-                        bin_med_position0 = np.median(x)
-                        bin_med_position1 = np.median(y)
-                        plt.text(bin_med_position0, bin_med_position1, str(j), fontsize=8, color='red')
 
-                        plt.text(.77, 0.35-j*0.04, 'Bin-'+ str(j)+ ' : #'+str(int(bin_pop[j])),fontsize=7, color='black' )
-                else:
-                        plt.text(.77, .35, 'Bin-C' + ' : #'+str(tip_pop),fontsize=7, color='black' )
-                        plt.text(np.median(sample[:,0]), np.median(sample[:,1]), 'C', fontsize=8, color='red')
-        # if(expansion_handle==True): plt.title(str(round(expansion[0],1))+', '+ str(round(expansion[1],1))+ ', ' + str(round(expansion[2],1)))
-        # plt.axis('equal')
-        plt.title(tit)
-        plt.savefig(path, bbox_inches='tight', format='png', dpi=200)
-        # plt.show()
-        plt.close()
+        
+                
+                # # # plb.axis('equal')
+                # ticks_x = ticker.FuncFormatter(lambda x, 
+                #                            pos: '{0:g}'.format(round(x*rangeData[0]+ minData[0], 2)))
+                # ax.xaxis.set_major_formatter(ticks_x)
 
-        print('tip_pop', tip_pop )
-        if(tip==True):
-                return bin_label, bin_pop, tip_label
-        else:
-                return bin_label, bin_pop
+                # ticks_y = ticker.FuncFormatter(lambda x, 
+                #                           pos: '{0:g}'.format(round(x*rangeData[1]+minData[1],2)))
+                # ax.yaxis.set_major_formatter(ticks_y)
+                plt.xlabel(x_label)
+                plt.ylabel(y_label)
+                # r = np.max(sample, axis=0) - np.min(sample, axis=0)
+                # plt.xlim(0,1)
+                # plt.ylim(0,1)
+                for j in (range(nBins)):  
+                        if(j>0):
+                                plt.text(np.median(sample[bin_label==j+1,0]),
+                                np.median(sample[bin_label==j+1,1]), str(j), fontsize=8, color='red')
+                                if int(bin_pop[j])>5:
+                                        plt.text(.77, 0.45-j*0.06, 'Bin %d: #%d'%(j, bin_pop[j]),fontsize=8, color='black')
+                        else:
+                                plt.text(.77, .45, 'Bin C: #%d'%bin_pop[j],fontsize=8, color='black' )
+                                plt.text(np.median(sample[:,0]), np.median(sample[:,1]), 'C', fontsize=8, color='red')
+                # if(expansion_handle==True): plt.title(str(round(expansion[0],1))+', '+ str(round(expansion[1],1))+ ', ' + str(round(expansion[2],1)))
+                # plt.axis('equal')
+                plt.title(tit)
+                plt.savefig(path, bbox_inches='tight', format='png', dpi=200)
+                plt.show()
+        #         plt.close()
+
+        return bin_label, bin_pop, lines
 
 
 def vectors_uniter(sampleVector):
@@ -693,3 +714,11 @@ def radius_finder(CERQ, Main_center,  enclosing_ratio, resolution):
         distance= x[np.where(count>=int(enclosing_ratio*len(CERQ_distances)))]
         return distance[0], wedge_direction, maxR_CERQ
 
+def sampler(mean1, cov1, mean2, cov2, NG1, NG2):
+
+        X1 = np.random.multivariate_normal(mean1, cov1, NG1)
+        X2= np.random.multivariate_normal(mean2, cov2, NG2)
+
+        X_all = np.concatenate((X1,X2), axis=0)
+#     np.savetxt(name, X_all)
+        return X_all, X1, X2

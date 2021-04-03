@@ -13,7 +13,7 @@ size(X_data)
 % %  centering 
 MainCenter = median(X_normal);
 X_Centered = X_normal - MainCenter;
-ERQ = X_normal(((iw3>=4.6) & (rew>=2)),:);
+ERQ = X_normal(((iw3>=4.6) & (rew>=2) & (kt80>=0.33)),:);
 ERQCenter = median(ERQ);
 ERQVector = ERQCenter - MainCenter;
 [nERQ, c] =size(ERQ);
@@ -33,7 +33,7 @@ end
 cdf = cumsum(counts);
 ind = find(cdf>int32(r*nERQ));
 opening_angle = (bins(ind(1)));
-rad2deg((opening_angle))
+op_an_deg = rad2deg((opening_angle))
 in_wedge = ((AllDirections) <= opening_angle);
 in_wedge=in_wedge';
 % sum(in_wedge)
@@ -71,7 +71,7 @@ load('D_mesh100_Silver_10.mat');
     surfe2=surf3;
     surfe3=surf3;
     surfe4=surf3;
-    surfe1.vertices=(surf3.vertices - MainCenter)*1.3+ MainCenter;
+    % surfe1.vertices=(surf3.vertices - MainCenter)*1.3+ MainCenter;
     surfe2.vertices=(surf3.vertices - MainCenter)*1.5+ MainCenter;
     surfe3.vertices=(surf3.vertices - MainCenter)*2.1+ MainCenter;
     surfe4.vertices=(surf3.vertices - MainCenter)*2.5+ MainCenter;
@@ -90,39 +90,42 @@ load('D_mesh100_Silver_10.mat');
     labels((in_surf1==1))=1;
     labels((in_wedge==1) & (in_surf1==0) & (in_surf2==1))=2;
     labels((in_wedge==1) & (in_surf2==0) & (in_surf3==1))=3;
-    labels((in_wedge==1) & (in_surf3==0) & (in_surfe1==1))=4;
-    labels((in_wedge==1) & (in_surfe1==0) & (in_surfe2==1))=5;
-    labels((in_wedge==1) & (in_surfe2==0) & (in_surfe3==1))=6;
-    labels((in_wedge==1) & (in_surfe3==0) & (in_surfe4==1))=7;
-    labels((in_wedge==1) & (in_surfe4==0))=8;
+    labels((in_wedge==1) & (in_surf3==0) & (in_surfe2==1))=4;
+    labels((in_wedge==1) & (in_surfe2==0) & (in_surfe3==1))=5;
+    % labels((in_wedge==1) & (in_surfe2==0) & (in_surfe3==1))=6;
+    labels((in_wedge==1) & (in_surfe3==0) & (in_surfe4==1))=6;
+    labels((in_wedge==1) & (in_surfe4==0))=7;
     save('labels.mat','labels');
 
-nBin=8;
-c=jet(7);
+nBin=7;
+c=jet(6);
 figure;
 view(3);
-% alpha(0.3)
+alpha(0.3)
 % tit= sprintf('coeff=%.2f', coeff(i));
 % % title(tit)
 
 % % legend('0.5', '0.1', '0.05', '0.01', '0.005', '0.002')
 
 
-p =plot3([MainCenter(1), ERQCenter(1)],[MainCenter(2), ERQCenter(2)],... 
-[MainCenter(3), ERQCenter(3)] );
-p.LineWidth=3;
-hold on
+% p =plot3([MainCenter(1), ERQCenter(1)],[MainCenter(2), ERQCenter(2)],... 
+% [MainCenter(3), ERQCenter(3)] );
+% p.LineWidth=3;
+% hold on
 for b=0:nBin
     mask = (labels==b);
     if (b==0)
-        scatter3(X_normal(mask,1), X_normal(mask,2), X_normal(mask,3), 0.5, 'k', 'Marker', '.' )
+        scatter3(X_normal(mask,1), X_normal(mask,2), X_normal(mask,3), 0.5, 'k', 'Marker', '.',...
+        'MarkerEdgeAlpha', 0.4 )
         hold on
     else
         if(b==1)
-            scatter3(X_normal(mask,1), X_normal(mask,2), X_normal(mask,3), 20, [0.7, 0.7, 0.7], 'Marker', 'o')
+            scatter3(X_normal(mask,1), X_normal(mask,2), X_normal(mask,3), 200, [0.7, 0.7, 0.7],...
+             'Marker', '.','MarkerEdgeAlpha',0.5)
             hold on
         else
-            scatter3(X_normal(mask,1), X_normal(mask,2), X_normal(mask,3), 20, c(b-1,:), 'Marker', 'o')
+            scatter3(X_normal(mask,1), X_normal(mask,2), X_normal(mask,3), 200, c(b-1,:),...
+              'Marker', '.', 'MarkerEdgeAlpha', 0.5)
             hold on
         end
     end
@@ -136,9 +139,24 @@ lz = sprintf('(kt80-%.2f)/%.2f', min(kt80), max(kt80)-min(kt80));
 set(get(gca, 'XLabel'), 'String', lx);
 set(get(gca, 'YLabel'), 'String', ly);
 set(get(gca, 'ZLabel'), 'String', lz);
-pp = patch(([4.6, 4.6, 4.6, 4.6]-min(iw3))/(max(iw3)-min(iw3)), [0,0,1,1], [0,1,1,0], [0,0,0,0]);
-pp.FaceAlpha=0.1;
-pp.FaceColor=[.3,0.1,0.1];
+ylim([0.2 1])
+xlim([0.1 1])
+zlim([0.1 1])
+
+
+iw3_p = (4.6 -min(iw3))/range(iw3);
+rew_p = (2-min(rew))/range(rew);
+kt80_p = (0.33-min(kt80))/range(kt80);
+pp1 = patch([iw3_p, iw3_p, iw3_p, iw3_p], [rew_p,rew_p,1,1], [kt80_p,1,1,kt80_p], [0,0,0,0]);
+pp2 = patch([iw3_p,iw3_p,1,1],[rew_p,rew_p ,rew_p ,rew_p ] ,[kt80_p,1,1,kt80_p], [0,0,0,0]);
+pp3 = patch([iw3_p,iw3_p,1,1], [rew_p,1,1,rew_p], [kt80_p,kt80_p,kt80_p,kt80_p], [0,0,0,0]);
+
+pp1.FaceAlpha=0.1;
+pp2.FaceAlpha=0.1;
+pp3.FaceAlpha=0.1;
+pp1.FaceColor=[.3,0.1,0.1];
+pp2.FaceColor=[.3,0.1,0.1];
+pp3.FaceColor=[.3,0.1,0.1];
 grid on
 % % % xlim([0,1])
 % % % ylim([0,1])
@@ -151,3 +169,7 @@ sum(labels==5)
 sum(labels==6)
 sum(labels==7)
 sum(labels==8)
+% 
+
+
+

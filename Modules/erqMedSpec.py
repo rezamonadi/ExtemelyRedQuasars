@@ -536,8 +536,10 @@ def KDE_Bin2D(sample, rangeData, minData, box, x_erq, y_erq, ngrid, bw,levels,A,
 
                         if (i<len(expansion)):
                                 plt.plot(l[:,0], l[:,1], c = 'black', ls='--', alpha=0.5, lw=1)
+                                # plt.text(l[0,0], l[0,1], '%.2f'%(expansion[i]))
                         else:
                                 plt.plot(l[:,0], l[:,1], c = 'black', ls='-', alpha=0.5, lw=1)
+                                # plt.text(l[0,:], l[0,1], '%.2f'%levels[i])
 
 
         

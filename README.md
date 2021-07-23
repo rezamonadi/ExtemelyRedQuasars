@@ -1,7 +1,7 @@
 ## Precise Selection of Extremely Red Quasars
 
 ### Sample selection 
-Sampling from the emission line catalog in H17: 
+Sampling from the [emission line catalog in](https://datadryad.org/stash/dataset/doi:10.6086/D1H59V) in H17: 
 ```erqSampling.ipynb```
 
 ### Luminosity Matching

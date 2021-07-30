@@ -1,6 +1,6 @@
 ## Precise Selection of Extremely Red Quasars
 
-### [Sample of T1BERQs](https://github.com/rezamonadi/ExtremelyRedQuasars/raw/main/T1BERQSample.fits)
+### [Sample of T1BERQs as a fits table](https://github.com/rezamonadi/ExtremelyRedQuasars/raw/main/T1BERQSample.fits)
 
 ### Sample selection 
 Sampling from the [emission line catalog](https://datadryad.org/stash/dataset/doi:10.6086/D1H59V) in H17: 

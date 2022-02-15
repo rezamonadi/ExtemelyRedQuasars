@@ -1,6 +1,6 @@
 ## Precise Selection of Extremely Red Quasars
 
-### [Our final sample of Type1 Boxy CIV lines Extremely Red quasars (T1BERQs) is available here as a fits table](https://github.com/rezamonadi/ExtremelyRedQuasars/raw/main/T1BERQSample.fits)
+### Our final sample of Type1 Boxy CIV lines Extremely Red quasars (T1BERQs) is available [here](https://github.com/rezamonadi/ExtremelyRedQuasars/raw/main/T1BERQSample.fits) as a fits table
 
 ### Sample selection 
 Sampling from the [emission line catalog](https://datadryad.org/stash/dataset/doi:10.6086/D1H59V) in H17: 
